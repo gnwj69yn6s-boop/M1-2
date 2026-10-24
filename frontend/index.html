@@ -1,0 +1,112 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8fc">
+  <title>MyData AI | 운동 비서</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-icon">✦</span>
+      <span>MyData <b>AI</b><small>PERSONAL FITNESS INSIGHTS</small></span>
+    </a>
+    <div class="server-status"><span class="dot"></span><span id="serverStatus">서버 연결 확인 중</span></div>
+  </header>
+
+  <main class="layout">
+    <section class="main-column">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">YOUR PERSONAL ASSISTANT</p>
+          <h1>내 운동을 이해하는<br><span>AI 비서.</span></h1>
+          <p class="subheading">기록을 모으고, 변화를 확인하고, 다음 운동을 계획하세요.</p>
+        </div>
+        <div class="hero-mark" aria-hidden="true">↗</div>
+      </div>
+
+      <section class="stats-grid" aria-label="운동 요약">
+        <article class="stat-card"><span>누적 운동 시간</span><strong id="totalMinutes">—</strong><small>분</small></article>
+        <article class="stat-card"><span>총 소모 칼로리</span><strong id="totalCalories">—</strong><small>kcal</small></article>
+        <article class="stat-card"><span>운동한 날짜</span><strong id="activeDays">—</strong><small>일</small></article>
+        <article class="stat-card"><span>최근 추세</span><strong id="trend">—</strong><small id="period">기간 확인 중</small></article>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">YOUR ACTIVITY</p><h2>운동 기록</h2></div>
+          <button class="button button-secondary" id="refreshBtn" type="button">새로고침</button>
+        </div>
+        <form id="exerciseForm" class="exercise-form">
+          <input type="hidden" id="recordId">
+          <label>운동 날짜<input id="exerciseDate" type="date" required></label>
+          <label>운동 종류
+            <select id="exerciseType">
+              <option>걷기</option><option>달리기</option><option>자전거</option>
+              <option>근력 운동</option><option>수영</option><option>요가</option><option>기타</option>
+            </select>
+          </label>
+          <label>시간 (분)<input id="exerciseValue" type="number" min="0" max="1440" step="1" required placeholder="30"></label>
+          <label>칼로리 (kcal)<input id="exerciseCalories" type="number" min="0" max="50000" step="1" value="0" required></label>
+          <label class="full-width">메모<input id="exerciseMemo" maxlength="1000" placeholder="오늘의 운동 메모"></label>
+          <div class="form-actions full-width">
+            <button class="button button-primary" id="saveExerciseBtn" type="submit">기록 추가</button>
+            <button class="button button-secondary hidden" id="cancelEditBtn" type="button">수정 취소</button>
+          </div>
+        </form>
+        <p id="dataNotice" class="notice" role="status"></p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>날짜</th><th>운동</th><th>시간</th><th>칼로리</th><th>관리</th></tr></thead>
+            <tbody id="exerciseRows"><tr><td colspan="5">기록을 불러오는 중입니다.</td></tr></tbody>
+          </table>
+        </div>
+        <p class="footnote">최근 기록부터 표시됩니다. 데이터는 Firestore에 저장됩니다.</p>
+      </section>
+
+      <section class="panel chat-panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">ASK YOUR DATA</p><h2>AI 운동 비서</h2></div>
+          <span class="ai-chip">✦ AI INSIGHTS</span>
+        </div>
+        <div class="suggestions">
+          <button type="button" class="suggestion">이번 주 운동량은 어때?</button>
+          <button type="button" class="suggestion">내 운동 추세를 알려줘</button>
+          <button type="button" class="suggestion">운동 기록을 요약해 줘</button>
+        </div>
+        <div id="chatMessages" class="chat-messages" aria-live="polite">
+          <div class="message assistant"><div class="bubble">안녕하세요! 저장된 운동 기록을 바탕으로 운동 시간과 추세를 분석해 드릴게요. 먼저 운동 기록을 추가하거나 테스트 데이터를 준비해 주세요.</div></div>
+        </div>
+        <form id="chatForm" class="chat-form">
+          <textarea id="chatInput" rows="2" maxlength="4000" placeholder="예: 지난주보다 운동량이 늘었어?" required></textarea>
+          <button id="sendBtn" class="send-button" type="submit" aria-label="질문 보내기">↑</button>
+        </form>
+        <p id="chatNotice" class="notice" role="status">서버 첫 요청은 무료 호스팅의 콜드스타트로 지연될 수 있습니다.</p>
+      </section>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel history-panel">
+        <div class="section-heading"><div><p class="eyebrow">YOUR JOURNEY</p><h2>대화 기록</h2></div><button class="icon-button" id="newChatBtn" type="button" title="새 대화">＋</button></div>
+        <p class="subtle">이전 대화를 선택하면 전체 메시지를 불러옵니다.</p>
+        <div id="conversationList" class="conversation-list"><p class="subtle">대화 기록을 불러오는 중입니다.</p></div>
+      </section>
+      <section class="panel summary-panel">
+        <p class="eyebrow">DATA OVERVIEW</p><h2>데이터 인사이트</h2>
+        <div class="summary-line"><span>전체 기록</span><strong id="recordCount">—</strong></div>
+        <div class="summary-line"><span>평균 운동 시간</span><strong id="averageMinutes">—</strong></div>
+        <div class="summary-line"><span>최장 운동</span><strong id="maxMinutes">—</strong></div>
+        <div class="summary-line"><span>최단 운동</span><strong id="minMinutes">—</strong></div>
+        <div class="summary-line"><span>최근 7일 변화</span><strong id="weeklyChange">—</strong></div>
+        <p class="footnote">AI 답변은 현재 저장된 데이터 요약을 기반으로 생성됩니다.</p>
+      </section>
+      <button id="loadDataBtn" class="button button-secondary full-button" type="button">요약 및 기록 새로고침</button>
+    </aside>
+  </main>
+  <footer>MyData AI · Your data, your progress.</footer>
+  <script src="./app.js" defer></script>
+</body>
+</html>
